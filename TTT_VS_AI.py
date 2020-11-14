@@ -179,3 +179,4 @@ def scan_to_win(e1,e2,e3,s):
     return result
 
 main()
+
