@@ -4,6 +4,7 @@ import random
 def main():
     global a
     a = [["_"]*3 for i in range(3)]
+
     for i in a:
         print(*i)
     m = "start"
@@ -68,7 +69,6 @@ def scan():
                 br = True
     y = [flag,br,win]
     return y
-    
 def scan_line(e1,e2,e3):
     result = False
     if a[e1[0]][e1[1]] == a[e2[0]][e2[1]] and a[e2[0]][e2[1]] == a[e3[0]][e3[1]] and a[e3[0]][e3[1]] != '_':
