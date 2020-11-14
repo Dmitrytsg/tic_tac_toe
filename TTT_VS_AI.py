@@ -1,7 +1,10 @@
-def main():
-    from termcolor import colored, cprint
+from termcolor import colored, cprint
+import random
 
+def main():
+    global a
     a = [["_"]*3 for i in range(3)]
+
     for i in a:
         print(*i)
     m = "start"
@@ -13,7 +16,7 @@ def main():
         sub = True
         if per%2 == 0:
             cprint('----Ход ИИ----','blue') 
-            a = AI_move(a,per)
+            AI_move(per)
         if per%2 == 1: 
             m = 'o'
             while sub:
@@ -28,7 +31,7 @@ def main():
                     print(colored('Данное поле уже занято значком:','red'),a[i][j])
         for i in a:
             print(*i)
-        state = scan(a)
+        state = scan()
         flag = state[0]
         br = state[1]
         win = state[2]
@@ -38,28 +41,27 @@ def main():
     if flag == False:
         print(colored("Победил",'green'),win)
 
-def scan(a):
+def scan():
     """
-    -Сканирует поле
+    -Сканирует поле на предмет переполненности или выигрыша
     -Принимает поле(двоичный массив 3x3)
-    -Возвращает флаг
+    -Возвращает флаг и победителя, если нашёлся
     """
     win = 0
     br = False
     flag = True
-    for i in a:
-        if (i[0] == i[1]) and (i[1] == i[2]) and i[0] != '_':
-            win = i[0]
-            flag = False
     for i in range(3):
-        if (a[0][i] == a[1][i]) and (a[1][i] == a[2][i]) and a[2][i] != '_':
+        if scan_line([i,0],[i,1],[i,2]):
+            win = a[i][0]
+            flag = False
+        if scan_line([0,i],[1,i],[2,i]):
             win = a[0][i]
             flag = False
-    if (a[0][0] == a[1][1]) and (a[1][1] == a[2][2]) and a[0][0] != '_':
+    if scan_line([0,0],[1,1],[2,2]):
         win = a[0][0]
         flag = False
-    if (a[0][2] == a[1][1]) and (a[1][1] == a[2][0]) and a[2][0] != '_':
-        win = a[0][0]
+    if scan_line([0,2],[1,1],[2,0]):
+        win = a[2][0]
         flag = False
     for i in a:
         for j in i:
@@ -67,250 +69,113 @@ def scan(a):
                 br = True
     y = [flag,br,win]
     return y
+def scan_line(e1,e2,e3):
+    result = False
+    if a[e1[0]][e1[1]] == a[e2[0]][e2[1]] and a[e2[0]][e2[1]] == a[e3[0]][e3[1]] and a[e3[0]][e3[1]] != '_':
+        result = True
+    return result
 
-def AI_move(a,per:int):
+def AI_move(per:int):
     """
     -Обработка поля программой 
-    -Принимает поле и шаг
+    -Принимает шаг
     -Возвращает изменённое поле
     param a: array
     param per: move count
     """
-    #Первые 3 хода обрабатываем вручную, они ключевые
+    #Первые 2 хода обрабатываем вручную, они ключевые
     if per == 0:
         a[0][0] = 'x'
-        return a
+        return
     elif per == 2:
         if a[2][0] == '_':
             a[2][0] = 'x'
         elif a[2][2] == '_':
             a[2][2] = 'x'
-        return a
-    elif per == 4 and a[1][0] != '_' and (a[2][0] == '_' or a[2][2] == '_'):
-        if a[2][0] == '_':
-            a[2][0] = 'x'
-        elif a[2][2] == '_':
-            a[2][2] = 'x'
-        return a
+        return
     #ходы дальше обрабатываются автоматически
-    if True:
+    else:
         #обрабатываем критическую ситуацию(2 'x')
         for i in range(3): #проверяем строки
-            r = scan_string(a,i)
-            count_x,count_,free_m = r[0],r[2],r[3]
-            if count_ != 0:
-                if count_x == 2:
-                    a[i][free_m] = 'x'
-                    return a
-            else:
-                continue
+            if scan_to_win([i,0],[i,1],[i,2],"x"):
+                return
         for i in range(3): #проверяем столбцы
-            r = scan_col(a,i)
-            count_x,count_,free_m = r[0],r[2],r[3]
-            if count_ != 0:
-                if count_x == 2:
-                    a[free_m][i] = 'x'
-                    return a
-            else:
-                continue
-        r = main_dia(a)#проверяем главную диагональ
-        count_x,count_o,count_,free_m = r[0],r[1],r[2],r[3]
-        if count_ != 0:
-            if count_x == 2:
-                a[free_m][free_m] = 'x'
-                return a
-        r = side_dia(a)#проверяем побочную диагональ
-        count_x,count_o,count_,i,j= r[0],r[1],r[2],r[3],r[4]
-        if count_ != 0:
-            if count_x == 2:
-                a[i][j] = 'x'
-                return a
+            if scan_to_win([0,i],[1,i],[2,i],'x'):
+                return
+        if scan_to_win([0,0],[1,1],[2,2],'x'):#проверяем главную диагональ
+            return
+        if scan_to_win([0,2],[1,1],[2,0],'x'):#проверяем побочную диагональ
+            return
 
         #обрабатываем критическую ситуацию(2 'o')
         for i in range(3): #проверяем строки
-            r = scan_string(a,i)
-            count_o,count_,free_m = r[1],r[2],r[3]
-            if count_ != 0:
-                if count_o == 2:
-                    a[i][free_m] = 'x'
-                    return a
-            else:
-                continue
+            if scan_to_win([i,0],[i,1],[i,2],"o"):
+                return
         for i in range(3): #проверяем столбцы
-            r = scan_col(a,i)
-            count_o,count_,free_m = r[1],r[2],r[3]
-            if count_ != 0:
-                if count_o == 2:
-                    a[free_m][i] = 'x'
-                    return a 
-            else:
-                continue
-        r = main_dia(a)#проверяем главную диагональ
-        count_x,count_o,count_,free_m = r[0],r[1],r[2],r[3]
-        if count_ != 0:
-            if count_o == 2:
-                a[free_m][free_m] = 'x' 
-                return a
-        r = side_dia(a)#проверяем побочную диагональ
-        count_x,count_o,count_,i,j= r[0],r[1],r[2],r[3],r[4]
-        if count_ != 0:
-            if count_o == 2:
-                a[i][j] = 'x' 
-                return a
+            if scan_to_win([0,i],[1,i],[2,i],'o'):
+                return
+        if scan_to_win([0,0],[1,1],[2,2],'o'):#проверяем главную диагональ
+            return
+        if scan_to_win([0,2],[1,1],[2,0],'o'):#проверяем побочную диагональ
+            return
 
         #проверяем случай когда 1 'x' и остальное пусто
         for i in range(3): #проверяем строки
-            r = scan_string(a,i)
-            count_x,count_o,count_,free_m = r[0],r[1],r[2],r[3]
-            if count_ != 0:
-                if count_x == 1 and count_o == 0:
-                    a[i][free_m] = 'x'
-                    return a
-            else:
-                continue
+            if scan_to_move([i,0],[i,1],[i,2],"x"):
+                return
         for i in range(3): #проверяем столбцы
-            r = scan_col(a,i)
-            count_x,count_o,count_,free_m = r[0],r[1],r[2],r[3]
-            if count_ != 0:
-                if count_x == 1 and count_o == 0:
-                    a[free_m][i] = 'x'
-                    return a
-            else:
-                continue
-        r = main_dia(a)#проверяем главную диагональ
-        count_x,count_o,count_,free_m = r[0],r[1],r[2],r[3]
-        if count_ != 0:
-            if count_x == 1 and count_o == 0:
-                a[free_m][free_m] = 'x'
-                return a
-        r = side_dia(a)#проверяем побочную диагональ
-        count_x,count_o,count_,i,j= r[0],r[1],r[2],r[3],r[4]
-        if count_ != 0:
-            if count_x == 1 and count_o == 0:
+            if scan_to_move([0,i],[1,i],[2,i],'x'):
+                return
+        if scan_to_move([0,0],[1,1],[2,2],'x'):#проверяем главную диагональ
+            return
+        if scan_to_move([0,2],[1,1],[2,0],'x'):#проверяем побочную диагональ
+            return
+
+        #во всех остальных случаях значение ставится рандомно
+        while True:
+            i = random.randint(0, 2)
+            j = random.randint(0, 2)
+            if a[i][j] == '_':
                 a[i][j] = 'x'
-                return a
+                break
 
-        #проверяем все остальные случаи
-        for i in range(3): #проверяем строки
-            r = scan_string(a,i)
-            count_,free_m= r[2],r[3]
-            if count_ != 0:
-                a[i][free_m] = 'x'
-                return a
-            else:
-                continue
-        for i in range(3): #проверяем столбцы
-            r = scan_col(a,i)
-            count_,free_m = r[2],r[3]
-            if count_ != 0:
-                a[free_m][i] = 'x'
-                return a
-            else:
-                continue
-        r = main_dia(a)#проверяем главную диагональ
-        count_x,count_o,count_,free_m = r[0],r[1],r[2],r[3]
-        if count_ != 0:
-            a[free_m][free_m] = 'x'
-            return a
-        r = side_dia(a)#проверяем побочную диагональ
-        count_x,count_o,count_,i,j= r[0],r[1],r[2],r[3],r[4]
-        if count_ != 0:
-            a[i][j] = 'x'
-            return a
-    
-def scan_string(a,i):
-    """
-    -Принимает поле и номер строки
-    -Считывает все данные строки
-    -Возвращает считанные данные
-    """
-    count_x = 0
-    count_o = 0
-    count_ = 0
-    free_m = 0
-    for j in range(3):
-        if a[i][j] == 'x':
-            count_x += 1 
-        if a[i][j] == 'o':
-            count_o += 1
-        if a[i][j] == '_':
-            count_ += 1
-            free_m = j
-    r = [count_x,count_o,count_,free_m]
-    return r
 
-def scan_col(a,i):
+def scan_to_move(e1,e2,e3,s):#!!!!!!!!!!!! можно сделать рандом !!!!!!!!!!!!
     """
-    -Принимает поле и номер столбца
-    -Считывает все данные столбца
-    -Возвращает считанные данные
+    -Проверяет ситуацию вида x__
+    -Сканирует заданную линию на поле
+    -Если ситуация, то делает ход
+    -Возвращает флаг 
     """
-    count_x = 0
-    count_o = 0
-    count_ = 0
-    free_m = 0 
-    for j in range(3):
-        if a[j][i] == 'x':
-            count_x += 1 
-        if a[j][i] == 'o':
-            count_o += 1
-        if a[j][i] == '_':
-            count_ += 1
-            free_m = j
-    r = [count_x,count_o,count_,free_m]
-    return r
+    result = False
+    if a[e1[0]][e1[1]] == s and a[e2[0]][e2[1]] == '_' and a[e3[0]][e3[1]] == '_':
+        a[e3[0]][e3[1]] = 'x'
+        result = True
+    if a[e1[0]][e1[1]] == '_' and a[e2[0]][e2[1]] == s and a[e3[0]][e3[1]]  == '_':
+        a[e3[0]][e3[1]] = 'x'
+        result = True
+    if a[e1[0]][e1[1]] == '_' and a[e2[0]][e2[1]] == '_' and a[e3[0]][e3[1]] == s:
+        a[e1[0]][e1[1]] = 'x'
+        result = True
+    return result
 
-def main_dia(a):
+def scan_to_win(e1,e2,e3,s):
     """
-    -Принимает поле
-    -Считывает все данные главной диагонали
-    -Возвращает считанные данные
+    -Проверяет ситуацию вида oo_ или xx_
+    -Сканирует заданную линию на поле
+    -Если ситуация "критическая", то делает ход
+    -Возвращает флаг 
     """
-    count_x = 0
-    count_o = 0
-    count_ = 0
-    free_m = 0 
-    for i in range(3): 
-        if a[i][i] == 'x':
-            count_x += 1 
-        if a[i][i] == 'o':
-            count_o += 1
-        if a[i][i] == '_':
-            count_ += 1
-            free_m = i
-    r = [count_x,count_o,count_,free_m]
-    return r
-
-def side_dia(a):
-    i = j = 0
-    count_x = 0
-    count_o = 0
-    count_ = 0
-    if a[0][2] == 'x':
-        count_x += 1 
-    if a[0][2] == 'o':
-        count_o += 1
-    if a[0][2] == '_':
-        count_ += 1
-        i = 0 
-        j = 2
-    if a[1][1] == 'x':
-        count_x += 1 
-    if a[1][1] == 'o':
-        count_o += 1
-    if a[1][1] == '_':
-        count_ += 1
-        i = 1
-        j = 1
-    if a[2][0] == 'x':
-        count_x += 1 
-    if a[2][0] == 'o':
-        count_o += 1
-    if a[2][0] == '_':
-        count_ += 1
-        i = 2
-        j = 0
-    r = [count_x,count_o,count_,i,j]
-    return r
+    result = False
+    if a[e1[0]][e1[1]] == s and a[e2[0]][e2[1]] == s and a[e3[0]][e3[1]] == '_':
+        a[e3[0]][e3[1]] = 'x'
+        result = True
+    if a[e1[0]][e1[1]] == s and a[e2[0]][e2[1]] == '_' and a[e3[0]][e3[1]] == s:
+        a[e2[0]][e2[1]] = 'x'
+        result = True
+    if a[e1[0]][e1[1]] == '_' and a[e2[0]][e2[1]] == s and a[e3[0]][e3[1]] == s:
+        a[e1[0]][e1[1]] = 'x'
+        result = True
+    return result
 
 main()
