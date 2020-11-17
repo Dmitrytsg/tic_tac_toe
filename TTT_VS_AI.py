@@ -6,14 +6,23 @@ def main():
 
     per = 0
     m = "start"
+    massage = "oopss"
+    print(colored("Выберете сложность","magenta",attrs=['bold']))
+    print((colored("Для того чтобы выбрать 'Лёгко' введите [0]","magenta",attrs=['bold'])))
+    print((colored("Для того чтобы выбрать 'Сложно' введите [1]","magenta",attrs=['bold'])))
+    level = int(input(""))
+    if level == 0: massage = "Лёгкий режим"
+    if level == 1: massage = "Сложный режим"
+    print((colored("Вы выбрали","green",attrs=['bold'])),colored(massage,"magenta",attrs=['bold']),"\n")
     print(colored("первыми ходят x","magenta",attrs=['bold']))
     print((colored("Для того чтобы выбрать x введите [1]","magenta",attrs=['bold'])))
     print((colored("Для того чтобы выбрать o введите [2]","magenta",attrs=['bold'])))
-    n = int(input())
+    n = int(input(""))
     if n == 1: 
         m = "x"
         per += 1
     if n == 2: m = "o"
+    print((colored("Вы выбрали","green",attrs=['bold'])),colored(m,"magenta",attrs=['bold']),"\n")
     a = [["_"]*3 for i in range(3)]
     for i in a:
         print(*i)
@@ -25,7 +34,7 @@ def main():
         sub = True
         if per%2 == 0:
             cprint('----Ход ИИ----','blue') 
-            AI_move(per,m)
+            AI_move(per,m,level)
         if per%2 == 1:
             while sub:
                 print("Куда хотите поставить",m,':')
@@ -83,36 +92,38 @@ def scan_line(e1,e2,e3):
         result = True
     return result
 
-def AI_move(per:int,m:str):
+def AI_move(per:int,m:str,level:int):
     """
     -Обработка поля программой 
     -Принимает шаг
     -Возвращает изменённое поле
     param per: move count
     param m: противник
+    param level: уровень игры level 1 - сложный; 0 - лёгкий
     """
-    print(per,m)
     value = "start" #значение ИИ в зависимости от параметра m
     #Первые 2 хода обрабатываем вручную, они ключевые
     if m == "o":
         value = "x"
-        if per == 0:
-            a[0][0] = "x"
-            return
-        elif per == 2:
-            if a[2][0] == '_':
-                a[2][0] = 'x'
-            elif a[2][2] == '_':
-                a[2][2] = 'x'
-            return
+        if level == 1:
+            if per == 0:
+                a[0][0] = "x"
+                return
+            elif per == 2:
+                if a[2][0] == '_':
+                    a[2][0] = 'x'
+                elif a[2][2] == '_':
+                    a[2][2] = 'x'
+                return
     if m == "x":
         value = "o"
-        if per == 2:
-            if a[1][1] == "_": a[1][1] = "o"
-            else: a[0][0] = "o"
-            return
+        if level == 1:
+            if per == 2:
+                if a[1][1] == "_": a[1][1] = "o"
+                else: a[0][0] = "o"
+                return
     #ходы дальше обрабатываются автоматически
-    if per >= 4:
+    if (per >= 4 and level == 1) or level == 0:
         #обрабатываем критическую ситуацию(2 value)
         for i in range(3): #проверяем строки
             if scan_to_win([i,0],[i,1],[i,2],value,value):
