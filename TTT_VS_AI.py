@@ -1,9 +1,12 @@
 from termcolor import colored, cprint
 import random
 
-def main():
-    global a
+a = []
 
+def main():
+    
+    global a
+    
     per = 0
     m = "start"
     massage = "oopss"
