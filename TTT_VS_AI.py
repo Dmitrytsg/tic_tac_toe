@@ -4,9 +4,8 @@ import random
 a = []
 
 def main():
-    
     global a
-    
+
     per = 0
     m = "start"
     massage = "oopss"
