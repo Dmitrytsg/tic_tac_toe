@@ -1,6 +1,8 @@
 from termcolor import colored, cprint
 import random
 
+a = []
+
 def main():
     global a
 
