@@ -6,7 +6,9 @@ def main():
 
     per = 0
     m = "start"
+    
     massage = "oopss"
+    
     print(colored("Выберете сложность","magenta",attrs=['bold']))
     print((colored("Для того чтобы выбрать 'Лёгко' введите [0]","magenta",attrs=['bold'])))
     print((colored("Для того чтобы выбрать 'Сложно' введите [1]","magenta",attrs=['bold'])))
@@ -46,12 +48,16 @@ def main():
                     sub = False
                 else:
                     print(colored('Данное поле уже занято значком:','red'),a[i][j])
-        for i in a:
-            print(*i)
         state = scan()
         flag = state[0]
         br = state[1]
         win = state[2]
+        if br == False:
+            for i in range(3):
+                for j in range(3):
+                    a[i][j] = colored(a[i][j],'red')
+        for i in a:
+            print(*i)
         per += 1
     if br == False and flag != False:
         cprint("Победителя нет",'yellow')
@@ -89,6 +95,9 @@ def scan():
 def scan_line(e1,e2,e3):
     result = False
     if a[e1[0]][e1[1]] == a[e2[0]][e2[1]] and a[e2[0]][e2[1]] == a[e3[0]][e3[1]] and a[e3[0]][e3[1]] != '_':
+        a[e1[0]][e1[1]] = colored(a[e1[0]][e1[1]],'green')
+        a[e2[0]][e2[1]] = colored(a[e2[0]][e2[1]],'green')
+        a[e3[0]][e3[1]] = colored(a[e3[0]][e3[1]],'green')
         result = True
     return result
 
