@@ -5,7 +5,7 @@
 #include <locale.h>
 #include <Windows.h>
 #include <time.h>
-
+#include <conio.h>
 
 int scan(bool *,bool *,char *);
 bool scan_line(char,char,char);
@@ -132,12 +132,14 @@ int main(){
         if(scan(&flag,&br,&win) != 0){
             printf("ERROR! Func: scan, with argument %d\n",scan(&flag,&br,&win));
             return 1;
-        }
+        } 
+        printf("\n");
         per += 1; 
     }
     if(!user_br) printf("Игра завершена");
     if(!br && flag) printf("Победителя нет");
     if(!flag) printf("Победил '%c'",win);
+    getch();
     return 0;
 }
 
@@ -146,6 +148,7 @@ int scan(bool *flag,bool *br,char *win){
     if(br == NULL) return 2;
     if(win == NULL) return 3;
 
+    *flag = true;
     *br = false;
     for(size_t i = 0; i < 3; i++){
         if(scan_line(a[i][0],a[i][1],a[i][2])){//для строк
